@@ -162,7 +162,7 @@ done
 echo "Making $INDEX_FILENAME for directory $DOWNLOAD_DIR"
 pushd "$DOWNLOAD_DIR" >/dev/null
 echo '<h1>Downloaded photos and videos by day</h1>' >"$INDEX_FILENAME"
-echo '<h3>Powered by <a href="https://github.com/cfryanr/hikvision-download-assistant">hikvision-download-assistant</a></h3><ul>' >>"$INDEX_FILENAME"
+echo '<h3>Powered by <a href="https://github.com/andrewshulgin/hikvision-download-assistant">hikvision-download-assistant</a></h3><ul>' >>"$INDEX_FILENAME"
 for DATE_DIR in $(find ./* -maxdepth 1 -type d | sort); do
   DATE_DIR=$(basename "$DATE_DIR")
   echo '<li><a href="'"$DATE_DIR"'/'"$INDEX_FILENAME"'">'"$(basename "$DATE_DIR")"'</a></li>' >>"$INDEX_FILENAME"
