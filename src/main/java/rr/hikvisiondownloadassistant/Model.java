@@ -1,4 +1,5 @@
 // Copyright (c) 2020 Ryan Richard
+// Copyright (c) 2022 Andrew Shulgin
 
 package rr.hikvisiondownloadassistant;
 
@@ -12,16 +13,12 @@ import java.util.List;
 
 public class Model {
 
-    public static final int VIDEOS_TRACK_ID = 101;
-    public static final int PHOTOS_TRACK_ID = 103;
-
     @Getter
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CMSearchDescription {
-        @Builder.Default
-        private String searchID = "search"; // supposed to be a guid in format ISO 9834-8, e.g. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX numbers and capital letters
+        private String searchID; // supposed to be a guid in format ISO 9834-8, e.g. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX numbers and capital letters
 
         private int maxResults;
 
@@ -79,6 +76,8 @@ public class Model {
         // e.g. rtsp://192.168.1.64/Streaming/tracks/101/?starttime=20200529T045749Z&amp;endtime=20200529T045805Z&amp;name=ch01_00000000000000613&amp;size=2901372
         // e.g. http://192.168.1.64/ISAPI/Streaming/tracks/103/?starttime=20200531T012016Z&amp;endtime=20200531T012016Z&amp;name=ch01_00000000001026401&amp;size=600489
         private String playbackURI;
+        private String lockStatus;
+        private String name;
     }
 
     @Getter

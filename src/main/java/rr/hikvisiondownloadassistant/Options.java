@@ -1,4 +1,5 @@
 // Copyright (c) 2020 Ryan Richard
+// Copyright (c) 2022 Andrew Shulgin
 
 package rr.hikvisiondownloadassistant;
 
@@ -58,6 +59,20 @@ public class Options {
     private String toTime;
 
     @Option(
+            names = {"-m", "--videos-track-id"},
+            defaultValue = "101",
+            description = "Use the specified track ID for videos. Defaults to '${DEFAULT-VALUE}'."
+    )
+    private int videosTrackID;
+
+    @Option(
+            names = {"-s", "--pictures-track-id"},
+            defaultValue = "103",
+            description = "Use the specified track ID for pictures. Defaults to '${DEFAULT-VALUE}'."
+    )
+    private int picturesTrackID;
+
+    @Option(
             names = {"-p", "--output-password"},
             description = "Output a different password in the printed curl commands, e.g. '$PASSWORD'."
     )
@@ -81,6 +96,12 @@ public class Options {
             description = "Suppress header and footer."
     )
     private boolean quiet;
+
+    @Option(
+            names = {"-v", "--verbose"},
+            description = "Debug requests."
+    )
+    private boolean verbose;
 
     enum OutputFormat {
         json,

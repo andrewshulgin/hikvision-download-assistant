@@ -1,4 +1,5 @@
 // Copyright (c) 2020 Ryan Richard
+// Copyright (c) 2022 Andrew Shulgin
 
 package rr.hikvisiondownloadassistant;
 
@@ -19,10 +20,9 @@ import java.net.http.HttpResponse;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import static rr.hikvisiondownloadassistant.DateConverter.dateToApiString;
-import static rr.hikvisiondownloadassistant.Model.PHOTOS_TRACK_ID;
-import static rr.hikvisiondownloadassistant.Model.VIDEOS_TRACK_ID;
 
 @Getter
 @RequiredArgsConstructor
@@ -36,25 +36,34 @@ public class IsapiRestClient {
     private final String username;
     private final String password;
 
-    public List<SearchMatchItem> searchVideos(Date fromDate, Date toDate) throws IOException, InterruptedException {
-        return searchMedia(fromDate, toDate, VIDEOS_TRACK_ID);
+    private final boolean verbose;
+
+    public List<SearchMatchItem> searchVideos(
+            Date fromDate, Date toDate, int trackID
+    ) throws IOException, InterruptedException {
+        return searchMedia(fromDate, toDate, trackID);
     }
 
-    public List<SearchMatchItem> searchPhotos(Date fromDate, Date toDate) throws IOException, InterruptedException {
-        return searchMedia(fromDate, toDate, PHOTOS_TRACK_ID);
+    public List<SearchMatchItem> searchPhotos(
+            Date fromDate, Date toDate, int trackID
+    ) throws IOException, InterruptedException {
+        return searchMedia(fromDate, toDate, trackID);
     }
 
-    private List<SearchMatchItem> searchMedia(Date fromDate, Date toDate, int trackId) throws IOException, InterruptedException {
+    private List<SearchMatchItem> searchMedia(
+            Date fromDate, Date toDate, int trackID
+    ) throws IOException, InterruptedException {
         List<SearchMatchItem> allResults = new LinkedList<>();
         CMSearchResult searchResult;
         final int maxResults = 50;
         int searchResultPosition = 0;
+        String searchID = UUID.randomUUID().toString().toUpperCase();
 
         do {
             searchResult = doHttpRequest(
                     POST,
                     "/ISAPI/ContentMgmt/search",
-                    getSearchRequestBodyXml(fromDate, toDate, trackId, searchResultPosition, maxResults),
+                    getSearchRequestBodyXml(searchID, fromDate, toDate, trackID, searchResultPosition, maxResults),
                     CMSearchResult.class
             );
 
@@ -69,21 +78,26 @@ public class IsapiRestClient {
         return allResults;
     }
 
-    private String getSearchRequestBodyXml(Date fromDate, Date toDate, int trackId, int searchResultPosition, int maxResults) throws JsonProcessingException {
+    private String getSearchRequestBodyXml(
+            String searchID, Date fromDate, Date toDate, int trackID, int searchResultPosition, int maxResults
+    ) throws JsonProcessingException {
         return xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(
                 CMSearchDescription.builder()
+                        .searchID(searchID)
                         .maxResults(maxResults)
                         .searchResultPosition(searchResultPosition)
                         .timeSpan(List.of(TimeSpan.builder()
                                 .startTime(dateToApiString(fromDate))
                                 .endTime(dateToApiString(toDate))
                                 .build()))
-                        .trackID(List.of(trackId))
+                        .trackID(List.of(trackID))
                         .build()
         );
     }
 
-    private <T> T doHttpRequest(String requestMethod, String requestPath, String body, Class<T> resultClass) throws IOException, InterruptedException {
+    private <T> T doHttpRequest(
+            String requestMethod, String requestPath, String body, Class<T> resultClass
+    ) throws IOException, InterruptedException {
         // Make the first request without an authorization header so we can get the digest challenge response.
         // See https://tools.ietf.org/html/rfc2617
         HttpResponse<String> unauthorizedResponse = doHttpRequestWithAuthHeader(requestMethod, requestPath, body, null);
@@ -92,11 +106,13 @@ public class IsapiRestClient {
         }
 
         // Calculate the authorization digest value
-        String authorizationHeaderValue = new DigestAuth(unauthorizedResponse.headers(), requestMethod, requestPath, username, password)
+        String authorizationHeaderValue = new DigestAuth(
+                unauthorizedResponse.headers(), requestMethod, requestPath, username, password)
                 .getAuthorizationHeaderValue();
 
         // Resend the request
-        HttpResponse<String> response = doHttpRequestWithAuthHeader(requestMethod, requestPath, body, authorizationHeaderValue);
+        HttpResponse<String> response = doHttpRequestWithAuthHeader(
+                requestMethod, requestPath, body, authorizationHeaderValue);
         if (response.statusCode() == 401) {
             throw new RuntimeException("Could not authenticate. Wrong username or password?");
         }
@@ -105,13 +121,16 @@ public class IsapiRestClient {
         }
 
         // Avoid a jackson parsing error where it doesn't like empty lists
-        String workaroundForEmptyResult = response.body().replaceAll("<matchList>\\s+</matchList>", "<matchList/>");
+        String workaroundForEmptyResult = response.body().replaceAll(
+                "<matchList>\\s+</matchList>", "<matchList/>");
 
         // Return the parsed response
         return xmlMapper.readValue(workaroundForEmptyResult, resultClass);
     }
 
-    private HttpResponse<String> doHttpRequestWithAuthHeader(String requestMethod, String path, String body, String authHeaderValue) throws IOException, InterruptedException {
+    private HttpResponse<String> doHttpRequestWithAuthHeader(
+            String requestMethod, String path, String body, String authHeaderValue
+    ) throws IOException, InterruptedException {
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create("http://" + host + path))
                 .header("Accept", "application/xml");
@@ -130,17 +149,21 @@ public class IsapiRestClient {
 
         HttpRequest request = requestBuilder.build();
 
-//        System.err.println("Request Method: " + requestMethod);
-//        System.err.println("Request URI: " + request.uri());
-//        System.err.println("Request Headers: " + request.headers().map());
-//        System.err.println("Request Body:\n" + body);
+        if (isVerbose()) {
+            System.err.println("Request Method: " + requestMethod);
+            System.err.println("Request URI: " + request.uri());
+            System.err.println("Request Headers: " + request.headers().map());
+            System.err.println("Request Body:\n" + body);
+        }
 
         HttpResponse<String> response = HttpClient.newHttpClient()
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
-//        System.err.println("Response Code: " + response.statusCode());
-//        System.err.println("Response Headers: " + response.headers().map());
-//        System.err.println("Response Body:\n" + response.body());
+        if (isVerbose()) {
+            System.err.println("Response Code: " + response.statusCode());
+            System.err.println("Response Headers: " + response.headers().map());
+            System.err.println("Response Body:\n" + response.body());
+        }
 
         return response;
     }

@@ -18,23 +18,28 @@ Run using `java -jar hikvision-download-assistant.jar <options>`.
 ### Usage statement
 
 ```
-Usage: java -jar hikvision-download-assistant.jar [-hqV] [-d=<tableDelimiter>] [-f=<fromTime>] [-o=<outputFormat>] [-p=<outputPassword>] [-t=<toTime>] [-u=<outputUsername>] HOST USERNAME PASSWORD
+Usage: java -jar hikvision-download-assistant.jar [-hqV] [-f=<fromTime>] [-t=<toTime>] [-m=<videosTrackID] [-s=<picturesTrackID>] [-p=<outputPassword>] [-u=<outputUsername>] [-d=<tableDelimiter>] [-o=<outputFormat>] HOST USERNAME PASSWORD
       HOST                 Connect to this host or IP address to perform search.
       USERNAME             Use this username when connecting to perform search.
       PASSWORD             Use this password when connecting to perform search.
-  -d, --table-delimiter=<tableDelimiter>
-                           The column delimiter for table output. Defaults to '|'.
+  -h, --help               Show this help message and exit.
   -f, --from-time=<fromTime>
                            Search starting from this time, entered using English natural language. Defaults to '24 hours ago'.
-  -h, --help               Show this help message and exit.
-  -o, --output=<outputFormat>
-                           Output format. Can be 'table' or 'json'. Defaults to 'table'.
+  -t, --to-time=<toTime>   Search up to this time, entered using English natural language. Defaults to 'now'.
+  -m, --to-time=<toTime>   Search up to this time, entered using English natural language. Defaults to 'now'.
+  -m, --videos-track-id=<videosTrackID>
+                           Use the specified track ID for videos. Defaults to '101'.
+  -s, --pictures-track-id=<picturesTrackID>
+                           Use the specified track ID for pictures. Defaults to '103'.
   -p, --output-password=<outputPassword>
                            Output a different password in the printed curl commands, e.g. '$PASSWORD'.
-  -q, --quiet              Suppress header and footer.
-  -t, --to-time=<toTime>   Search up to this time, entered using English natural language. Defaults to 'now'.
   -u, --output-username=<outputUsername>
                            Output a different username in the printed curl commands, e.g. '$USERNAME'.
+  -d, --table-delimiter=<tableDelimiter>
+                           The column delimiter for table output. Defaults to '|'.
+  -q, --quiet              Suppress header and footer.
+  -o, --output=<outputFormat>
+                           Output format. Can be 'table' or 'json'. Defaults to 'table'.
   -V, --version            Print version information and exit.
 ```
 

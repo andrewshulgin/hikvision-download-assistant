@@ -1,4 +1,5 @@
 // Copyright (c) 2020 Ryan Richard
+// Copyright (c) 2022 Andrew Shulgin
 
 package rr.hikvisiondownloadassistant;
 
@@ -20,8 +21,8 @@ import static javax.xml.bind.DatatypeConverter.printHexBinary;
 @RequiredArgsConstructor
 public class DigestAuth {
 
-    private static MessageDigest messageDigest;
-    private static SecureRandom random;
+    private static final MessageDigest messageDigest;
+    private static final SecureRandom random;
 
     private final HttpHeaders unauthorizedResponseHeaders;
     private final String requestMethod;
@@ -51,7 +52,7 @@ public class DigestAuth {
 
         String[] authenticateFields = authChallenge.substring("Digest ".length()).replace("\"", "").split(", ");
         Map<String, String> authenticateFieldsMap = Arrays.stream(authenticateFields)
-                .map(s -> s.split("="))
+                .map(s -> s.split("=", 2))
                 .collect(Collectors.toMap(a -> a[0], a -> a[1]));
 
         String realm = authenticateFieldsMap.get("realm");
